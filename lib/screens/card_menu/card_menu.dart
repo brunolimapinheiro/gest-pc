@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'product_details.dart';
+import 'product_details.dart'; // ← Certifique-se de que este arquivo está importado
 
 class ProductsDesktop extends StatefulWidget {
   const ProductsDesktop({super.key});
@@ -21,7 +21,7 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
     'Promoções'
   ];
 
-  // Lista de ícones disponíveis (mesma vibe do Saipos + visual bonito)
+  // Lista de ícones disponíveis para o cadastro
   final List<IconData> _availableIcons = [
     Icons.fastfood,
     Icons.local_pizza,
@@ -38,7 +38,6 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
   ];
 
   final List<Map<String, dynamic>> produtos = [
-    // ... sua lista original continua igual (não alterei)
     {'nome': 'Hambúrguer Clássico', 'preco': 18.90, 'cat': 'Lanches', 'icone': Icons.fastfood},
     {'nome': 'Cheeseburger Duplo', 'preco': 24.90, 'cat': 'Lanches', 'icone': Icons.fastfood},
     {'nome': 'Batata Frita Grande', 'preco': 14.90, 'cat': 'Lanches', 'icone': Icons.local_pizza},
@@ -60,12 +59,22 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
 
   // ====================== POP-UP DE NOVO PRODUTO ======================
   void _showNewProductDialog() {
+    // Controladores existentes e novos
     final nomeCtrl = TextEditingController();
+    final nomeComercialCtrl = TextEditingController();
     final precoCtrl = TextEditingController();
-    final codigoCtrl = TextEditingController();
+    final codigoCtrl = TextEditingController(); // Representa o SKU
+    final eanCtrl = TextEditingController();
     final descricaoCtrl = TextEditingController();
+    final undPrincipalCtrl = TextEditingController();
+    final undSecundariaCtrl = TextEditingController();
+    final subcategoriaCtrl = TextEditingController();
+    final marcaCtrl = TextEditingController();
+    final modeloCtrl = TextEditingController();
+    final refFabricanteCtrl = TextEditingController();
+    final aplicacaoCtrl = TextEditingController();
 
-    String categoriaSelecionada = categorias[1]; // default "Bebidas"
+    String categoriaSelecionada = 'Bebidas';
     IconData iconeSelecionado = _availableIcons[0];
     final List<String> disponivelEm = ['Delivery', 'Salão', 'Pedido Online'];
 
@@ -74,71 +83,126 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            title: const Text(
-              'Cadastrar Novo Produto',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
+            title: const Text('Cadastrar Novo Produto', style: TextStyle(fontWeight: FontWeight.bold)),
             content: SizedBox(
-              width: 520,
+              width: 580, // Ligeiramente mais largo para acomodar os campos lado a lado
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nome
                     TextField(
                       controller: nomeCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome do produto *',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Nome do produto *', border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
-
-                    // Preço
                     TextField(
-                      controller: precoCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Preço (R\$) *',
-                        prefixText: 'R\$ ',
-                        border: OutlineInputBorder(),
-                      ),
+                      controller: nomeComercialCtrl,
+                      decoration: const InputDecoration(labelText: 'Nome comercial (se diferente)', border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
-
-                    // Categoria
-                    DropdownButtonFormField<String>(
-                      value: categoriaSelecionada,
-                      decoration: const InputDecoration(
-                        labelText: 'Categoria',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: categorias
-                          .where((c) => c != 'Todos')
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setDialogState(() => categoriaSelecionada = val);
-                        }
-                      },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: precoCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: const InputDecoration(labelText: 'Preço (R\$) *', prefixText: 'R\$ ', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: categoriaSelecionada,
+                            decoration: const InputDecoration(labelText: 'Categoria', border: OutlineInputBorder()),
+                            items: categorias
+                                .where((c) => c != 'Todos')
+                                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) setDialogState(() => categoriaSelecionada = val);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
-
-                    // Código interno (Saipos)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: subcategoriaCtrl,
+                            decoration: const InputDecoration(labelText: 'Subcategoria', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: codigoCtrl,
+                            decoration: const InputDecoration(labelText: 'Código interno (SKU)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: eanCtrl,
+                            decoration: const InputDecoration(labelText: 'Código de barras (EAN/UPC)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: undPrincipalCtrl,
+                            decoration: const InputDecoration(labelText: 'Unid. Principal (ex: kg, un)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: undSecundariaCtrl,
+                            decoration: const InputDecoration(labelText: 'Unid. Secundária (opcional)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: marcaCtrl,
+                            decoration: const InputDecoration(labelText: 'Marca', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: modeloCtrl,
+                            decoration: const InputDecoration(labelText: 'Modelo', border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     TextField(
-                      controller: codigoCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Código interno (opcional)',
-                        hintText: 'Ex: 12345',
-                        border: OutlineInputBorder(),
-                      ),
+                      controller: refFabricanteCtrl,
+                      decoration: const InputDecoration(labelText: 'Referência do fabricante', border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
-
-                    // Disponível em (exatamente como no Saipos)
-                    const Text('Onde o produto está disponível?',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    TextField(
+                      controller: aplicacaoCtrl,
+                      maxLines: 2,
+                      decoration: const InputDecoration(labelText: 'Aplicação ou uso (opcional)', border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Onde o produto está disponível?', style: TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 12,
@@ -160,21 +224,13 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
                       }).toList(),
                     ),
                     const SizedBox(height: 24),
-
-                    // Descrição
                     TextField(
                       controller: descricaoCtrl,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Descrição (para site e cardápio digital)',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Descrição Detalhada', border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 24),
-
-                    // Seletor de ícone (substituto bonito da foto)
-                    const Text('Escolha o ícone do produto',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const Text('Escolha o ícone do produto', style: TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 80,
@@ -192,19 +248,11 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
                                 width: 64,
                                 height: 64,
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? const Color(0xFF0055FF).withOpacity(0.15)
-                                      : Colors.grey[100],
+                                  color: isSelected ? const Color(0xFF0055FF).withOpacity(0.15) : Colors.grey[100],
                                   shape: BoxShape.circle,
-                                  border: isSelected
-                                      ? Border.all(color: const Color(0xFF0055FF), width: 3)
-                                      : null,
+                                  border: isSelected ? Border.all(color: const Color(0xFF0055FF), width: 3) : null,
                                 ),
-                                child: Icon(icon,
-                                    size: 36,
-                                    color: isSelected
-                                        ? const Color(0xFF0055FF)
-                                        : Colors.grey[700]),
+                                child: Icon(icon, size: 36, color: isSelected ? const Color(0xFF0055FF) : Colors.grey[700]),
                               ),
                             ),
                           );
@@ -232,30 +280,36 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
 
                   final preco = double.tryParse(precoCtrl.text.replaceAll(',', '.')) ?? 0.0;
 
+                  // Salvando todos os novos campos no mapa
                   final novoProduto = {
                     'nome': nomeCtrl.text.trim(),
+                    'nomeComercial': nomeComercialCtrl.text.trim(),
                     'preco': preco,
                     'cat': categoriaSelecionada,
-                    'icone': iconeSelecionado,
-                    'descricao': descricaoCtrl.text.trim(),
+                    'subcategoria': subcategoriaCtrl.text.trim(),
                     'codigo': codigoCtrl.text.trim().isEmpty
                         ? 'AUTO-${nomeCtrl.text.substring(0, 3).toUpperCase()}'
-                        : codigoCtrl.text.trim(),
+                        : codigoCtrl.text.trim(), // Este é o SKU
+                    'ean': eanCtrl.text.trim(),
+                    'unidadePrincipal': undPrincipalCtrl.text.trim(),
+                    'unidadeSecundaria': undSecundariaCtrl.text.trim(),
+                    'marca': marcaCtrl.text.trim(),
+                    'modelo': modeloCtrl.text.trim(),
+                    'referenciaFabricante': refFabricanteCtrl.text.trim(),
+                    'aplicacao': aplicacaoCtrl.text.trim(),
+                    'icone': iconeSelecionado,
+                    'descricao': descricaoCtrl.text.trim(),
                     'disponivelEm': disponivelEm.join(', '),
                   };
 
                   setState(() => produtos.add(novoProduto));
-
                   Navigator.pop(context);
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('✅ Produto cadastrado com sucesso!'),
-                      backgroundColor: Colors.green,
-                    ),
+                    const SnackBar(content: Text('✅ Produto cadastrado com sucesso!'), backgroundColor: Colors.green),
                   );
                 },
-                child: const Text('Cadastrar Produto'),
+                child: const Text('Cadastrar Produto', style: TextStyle(color: Colors.white)),
               ),
             ],
           );
@@ -264,7 +318,6 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
     );
   }
 
-  // ====================== RESTO DO BUILD (igual, só mudou o botão) ======================
   @override
   Widget build(BuildContext context) {
     final produtosFiltrados = produtos.where((p) {
@@ -279,7 +332,7 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sidebar Categorias (igual)
+          // Sidebar de Categorias
           Container(
             width: 220,
             decoration: BoxDecoration(
@@ -317,28 +370,29 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
           ),
           const SizedBox(width: 32),
 
+          // Conteúdo principal
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Text('Cardápio / Produtos',
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                    const Text('Cardápio / Produtos', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Novo Produto'),
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text('Novo Produto', style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0055FF),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       ),
-                      onPressed: _showNewProductDialog, // ← AQUI ESTÁ O POP-UP!
+                      onPressed: _showNewProductDialog, // Pop-up de cadastro
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Campo de busca (igual)
+
+                // Campo de busca
                 TextField(
                   controller: _searchController,
                   onChanged: (_) => setState(() {}),
@@ -352,6 +406,7 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
                 ),
                 const SizedBox(height: 32),
 
+                // Lista de produtos
                 Expanded(
                   child: ListView.builder(
                     itemCount: produtosFiltrados.length,
@@ -371,14 +426,10 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(prod['nome'],
-                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                                    Text(prod['nome'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                                     const SizedBox(height: 6),
                                     Text('R\$ ${prod['preco'].toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF0055FF))),
+                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0055FF))),
                                   ],
                                 ),
                               ),
@@ -395,7 +446,7 @@ class _ProductsDesktopState extends State<ProductsDesktop> {
                                   backgroundColor: Colors.green,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
-                                child: const Text('Ver mais'),
+                                child: const Text('Ver mais', style: TextStyle(color: Colors.white)),
                               ),
                             ],
                           ),

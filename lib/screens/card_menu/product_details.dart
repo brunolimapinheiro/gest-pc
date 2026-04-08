@@ -11,121 +11,131 @@ class ProductDetailsScreen extends StatefulWidget {
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   bool _isEditing = false;
 
+  // ==================== CONTROLLERS ====================
+  late TextEditingController _skuController;           // Código interno
+  late TextEditingController _eanController;           // Código de barras
   late TextEditingController _nomeController;
-  late TextEditingController _precoController;
-  late TextEditingController _codigoController;
+  late TextEditingController _nomeComercialController;
   late TextEditingController _descricaoController;
+  late TextEditingController _unidadePrincipalController;
+  late TextEditingController _unidadeSecundariaController;
+  late TextEditingController _categoriaController;
+  late TextEditingController _subcategoriaController;
+  late TextEditingController _marcaController;
+  late TextEditingController _modeloController;
+  late TextEditingController _referenciaFabricanteController;
+  late TextEditingController _aplicacaoController;
 
-  late String _categoria;
-  late List<String> _disponivelEm;
-  late IconData _iconeSelecionado;
+  late String _imageUrl;
 
-  final List<String> _categorias = [
-    'Bebidas', 'Lanches', 'Sobremesas', 'Pratos Quentes', 'Promoções'
-  ];
-
-  final List<String> _disponibilidades = ['Delivery', 'Salão', 'Pedido Online'];
-
-  final List<IconData> _availableIcons = [
-    Icons.fastfood, Icons.local_pizza, Icons.local_drink,
-    Icons.emoji_food_beverage, Icons.coffee, Icons.cake,
-    Icons.icecream, Icons.restaurant, Icons.dinner_dining,
-    Icons.local_dining, Icons.local_bar, Icons.breakfast_dining,
-  ];
+  final List<String> _unidades = ['un', 'kg', 'g', 'l', 'ml', 'cx', 'pct', 'm', 'm²'];
 
   @override
   void initState() {
     super.initState();
 
-    _nomeController = TextEditingController(text: widget.produto['nome']);
-    _precoController = TextEditingController(text: widget.produto['preco'].toStringAsFixed(2));
-    _codigoController = TextEditingController(
-      text: widget.produto['codigo'] ?? 'AUTO-${widget.produto['nome'].substring(0, 3).toUpperCase()}',
-    );
-    _descricaoController = TextEditingController(
-      text: widget.produto['descricao'] ?? 'Produto de alta qualidade - ideal para o seu cardápio.',
-    );
+    _skuController = TextEditingController(text: widget.produto['sku'] ?? '');
+    _eanController = TextEditingController(text: widget.produto['ean'] ?? '');
+    _nomeController = TextEditingController(text: widget.produto['nome'] ?? '');
+    _nomeComercialController = TextEditingController(text: widget.produto['nomeComercial'] ?? '');
+    _descricaoController = TextEditingController(text: widget.produto['descricao'] ?? '');
+    _unidadePrincipalController = TextEditingController(text: widget.produto['unidadePrincipal'] ?? 'un');
+    _unidadeSecundariaController = TextEditingController(text: widget.produto['unidadeSecundaria'] ?? '');
+    _categoriaController = TextEditingController(text: widget.produto['categoria'] ?? 'Geral');
+    _subcategoriaController = TextEditingController(text: widget.produto['subcategoria'] ?? '');
+    _marcaController = TextEditingController(text: widget.produto['marca'] ?? '');
+    _modeloController = TextEditingController(text: widget.produto['modelo'] ?? '');
+    _referenciaFabricanteController = TextEditingController(text: widget.produto['referenciaFabricante'] ?? '');
+    _aplicacaoController = TextEditingController(text: widget.produto['aplicacao'] ?? '');
 
-    _categoria = widget.produto['cat'];
-    _iconeSelecionado = widget.produto['icone'] as IconData;
-    _disponivelEm = (widget.produto['disponivelEm'] as String? ?? 'Delivery, Salão e Online')
-        .split(',')
-        .map((e) => e.trim())
-        .toList();
+    _imageUrl = widget.produto['imagem'] ?? 'https://via.placeholder.com/400x400/0055FF/FFFFFF?text=Produto';
 
     // Garante que todos os campos existam no Map
-    widget.produto.putIfAbsent('codigo', () => _codigoController.text);
+    widget.produto.putIfAbsent('sku', () => _skuController.text);
+    widget.produto.putIfAbsent('ean', () => _eanController.text);
+    widget.produto.putIfAbsent('nomeComercial', () => _nomeComercialController.text);
     widget.produto.putIfAbsent('descricao', () => _descricaoController.text);
-    widget.produto.putIfAbsent('disponivelEm', () => _disponivelEm.join(', '));
+    widget.produto.putIfAbsent('unidadePrincipal', () => _unidadePrincipalController.text);
+    widget.produto.putIfAbsent('unidadeSecundaria', () => _unidadeSecundariaController.text);
+    widget.produto.putIfAbsent('categoria', () => _categoriaController.text);
+    widget.produto.putIfAbsent('subcategoria', () => _subcategoriaController.text);
+    widget.produto.putIfAbsent('marca', () => _marcaController.text);
+    widget.produto.putIfAbsent('modelo', () => _modeloController.text);
+    widget.produto.putIfAbsent('referenciaFabricante', () => _referenciaFabricanteController.text);
+    widget.produto.putIfAbsent('aplicacao', () => _aplicacaoController.text);
+    widget.produto.putIfAbsent('imagem', () => _imageUrl);
   }
 
   @override
   void dispose() {
+    _skuController.dispose();
+    _eanController.dispose();
     _nomeController.dispose();
-    _precoController.dispose();
-    _codigoController.dispose();
+    _nomeComercialController.dispose();
     _descricaoController.dispose();
+    _unidadePrincipalController.dispose();
+    _unidadeSecundariaController.dispose();
+    _categoriaController.dispose();
+    _subcategoriaController.dispose();
+    _marcaController.dispose();
+    _modeloController.dispose();
+    _referenciaFabricanteController.dispose();
+    _aplicacaoController.dispose();
     super.dispose();
   }
 
-  void _startEditing() {
-    _nomeController.text = widget.produto['nome'];
-    _precoController.text = widget.produto['preco'].toStringAsFixed(2);
-    _codigoController.text = widget.produto['codigo'] ?? '';
-    _categoria = widget.produto['cat'];
-    _descricaoController.text = widget.produto['descricao'] ?? '';
-    _iconeSelecionado = widget.produto['icone'] as IconData;
-    _disponivelEm = (widget.produto['disponivelEm'] as String? ?? 'Delivery, Salão e Online')
-        .split(',')
-        .map((e) => e.trim())
-        .toList();
-
-    setState(() => _isEditing = true);
-  }
+  void _startEditing() => setState(() => _isEditing = true);
 
   void _cancelEditing() {
-    _nomeController.text = widget.produto['nome'];
-    _precoController.text = widget.produto['preco'].toStringAsFixed(2);
-    _codigoController.text = widget.produto['codigo'] ?? '';
-    _categoria = widget.produto['cat'];
+    // Recarrega valores originais
+    _skuController.text = widget.produto['sku'] ?? '';
+    _eanController.text = widget.produto['ean'] ?? '';
+    _nomeController.text = widget.produto['nome'] ?? '';
+    _nomeComercialController.text = widget.produto['nomeComercial'] ?? '';
     _descricaoController.text = widget.produto['descricao'] ?? '';
-    _iconeSelecionado = widget.produto['icone'] as IconData;
-    _disponivelEm = (widget.produto['disponivelEm'] as String? ?? 'Delivery, Salão e Online')
-        .split(',')
-        .map((e) => e.trim())
-        .toList();
+    _unidadePrincipalController.text = widget.produto['unidadePrincipal'] ?? 'un';
+    _unidadeSecundariaController.text = widget.produto['unidadeSecundaria'] ?? '';
+    _categoriaController.text = widget.produto['categoria'] ?? 'Geral';
+    _subcategoriaController.text = widget.produto['subcategoria'] ?? '';
+    _marcaController.text = widget.produto['marca'] ?? '';
+    _modeloController.text = widget.produto['modelo'] ?? '';
+    _referenciaFabricanteController.text = widget.produto['referenciaFabricante'] ?? '';
+    _aplicacaoController.text = widget.produto['aplicacao'] ?? '';
+    _imageUrl = widget.produto['imagem'] ?? 'https://via.placeholder.com/400x400/0055FF/FFFFFF?text=Produto';
 
     setState(() => _isEditing = false);
   }
 
   void _saveEditing() {
-    final preco = double.tryParse(_precoController.text) ?? widget.produto['preco'];
-
     setState(() {
+      widget.produto['sku'] = _skuController.text.trim();
+      widget.produto['ean'] = _eanController.text.trim();
       widget.produto['nome'] = _nomeController.text.trim();
-      widget.produto['preco'] = preco;
-      widget.produto['cat'] = _categoria;
-      widget.produto['codigo'] = _codigoController.text.trim();
+      widget.produto['nomeComercial'] = _nomeComercialController.text.trim();
       widget.produto['descricao'] = _descricaoController.text.trim();
-      widget.produto['disponivelEm'] = _disponivelEm.join(', ');
-      widget.produto['icone'] = _iconeSelecionado;
+      widget.produto['unidadePrincipal'] = _unidadePrincipalController.text.trim();
+      widget.produto['unidadeSecundaria'] = _unidadeSecundariaController.text.trim();
+      widget.produto['categoria'] = _categoriaController.text.trim();
+      widget.produto['subcategoria'] = _subcategoriaController.text.trim();
+      widget.produto['marca'] = _marcaController.text.trim();
+      widget.produto['modelo'] = _modeloController.text.trim();
+      widget.produto['referenciaFabricante'] = _referenciaFabricanteController.text.trim();
+      widget.produto['aplicacao'] = _aplicacaoController.text.trim();
+      widget.produto['imagem'] = _imageUrl;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('✅ Produto atualizado com sucesso!'), backgroundColor: Colors.green),
+      const SnackBar(content: Text('✅ Produto salvo com sucesso!'), backgroundColor: Colors.green),
     );
-
     setState(() => _isEditing = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentIcon = _isEditing ? _iconeSelecionado : (widget.produto['icone'] as IconData);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isEditing ? 'Editar Produto' : widget.produto['nome'],
+          _isEditing ? 'Editar Produto' : (widget.produto['nome'] ?? 'Produto'),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF0055FF),
@@ -136,172 +146,166 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           else
             Row(
               children: [
-                TextButton.icon(icon: const Icon(Icons.close, color: Colors.white), label: const Text('Cancelar', style: TextStyle(color: Colors.white)), onPressed: _cancelEditing),
-                TextButton.icon(icon: const Icon(Icons.save, color: Colors.white), label: const Text('Salvar', style: TextStyle(color: Colors.white)), onPressed: _saveEditing),
+                TextButton.icon(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  label: const Text('Cancelar', style: TextStyle(color: Colors.white)),
+                  onPressed: _cancelEditing,
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.save, color: Colors.white),
+                  label: const Text('Salvar', style: TextStyle(color: Colors.white)),
+                  onPressed: _saveEditing,
+                ),
               ],
             ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ==================== ÍCONE PRINCIPAL (preview ao vivo) ====================
-              Center(
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0055FF).withOpacity(0.08),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 12)),
-                    ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ==================== IMAGEM DO PRODUTO ====================
+            Center(
+              child: Column(
+                children: [
+                  Container(
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.grey[100],
+                      image: _imageUrl.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(_imageUrl), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: _imageUrl.isEmpty
+                        ? const Icon(Icons.image, size: 80, color: Colors.grey)
+                        : null,
                   ),
-                  child: Icon(currentIcon, size: 120, color: const Color(0xFF0055FF)),
-                ),
+                  if (_isEditing)
+                    TextButton.icon(
+                      onPressed: () {
+                        // Aqui você pode integrar image_picker no futuro
+                        setState(() {
+                          _imageUrl = 'https://picsum.photos/id/${DateTime.now().millisecond}/600/600';
+                        });
+                      },
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Trocar imagem'),
+                    ),
+                ],
               ),
+            ),
+            const SizedBox(height: 40),
 
-              // Seletor de ícone (só aparece no modo edição)
-              if (_isEditing) ...[
-                const SizedBox(height: 16),
-                const Text('Trocar ícone do produto', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 90,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _availableIcons.length,
-                    itemBuilder: (context, i) {
-                      final icon = _availableIcons[i];
-                      final isSelected = icon == _iconeSelecionado;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _iconeSelecionado = icon),
-                          child: Container(
-                            width: 74,
-                            height: 74,
-                            decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF0055FF).withOpacity(0.15) : Colors.grey[100],
-                              shape: BoxShape.circle,
-                              border: isSelected ? Border.all(color: const Color(0xFF0055FF), width: 4) : null,
-                            ),
-                            child: Icon(icon, size: 38, color: isSelected ? const Color(0xFF0055FF) : Colors.grey[700]),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+            // ==================== CAMPOS PRINCIPAIS ====================
+            _buildTextField(_nomeController, 'Nome do produto', enabled: _isEditing),
+            const SizedBox(height: 12),
+            _buildTextField(_nomeComercialController, 'Nome comercial (opcional)', enabled: _isEditing),
+            const SizedBox(height: 24),
+
+            Row(
+              children: [
+                Expanded(child: _buildTextField(_skuController, 'Código interno (SKU)', enabled: _isEditing)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildTextField(_eanController, 'Código de barras (EAN/UPC)', enabled: _isEditing)),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // ==================== UNIDADES ====================
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(_unidadePrincipalController, 'Unidade principal (ex: un, kg, l)', enabled: _isEditing),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(_unidadeSecundariaController, 'Unidade secundária (opcional)', enabled: _isEditing),
                 ),
               ],
+            ),
+            const SizedBox(height: 32),
 
-              const SizedBox(height: 40),
+            // ==================== CLASSIFICAÇÃO ====================
+            const Text('Classificação', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            _buildTextField(_categoriaController, 'Categoria / Grupo', enabled: _isEditing),
+            const SizedBox(height: 12),
+            _buildTextField(_subcategoriaController, 'Subcategoria', enabled: _isEditing),
+            const SizedBox(height: 24),
 
-              // ==================== CAMPOS PRINCIPAIS ====================
-              _isEditing
-                  ? TextField(controller: _nomeController, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold), decoration: InputDecoration(labelText: 'Nome do produto', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))))
-                  : Text(widget.produto['nome'], style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Expanded(child: _buildTextField(_marcaController, 'Marca', enabled: _isEditing)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildTextField(_modeloController, 'Modelo', enabled: _isEditing)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(_referenciaFabricanteController, 'Referência do fabricante', enabled: _isEditing),
 
-              const SizedBox(height: 8),
+            const SizedBox(height: 32),
 
-              _isEditing
-                  ? TextField(controller: _precoController, keyboardType: const TextInputType.numberWithOptions(decimal: true), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold), decoration: InputDecoration(labelText: 'Preço', prefixText: 'R\$ ', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))))
-                  : Text('R\$ ${widget.produto['preco'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF0055FF))),
+            // ==================== DESCRIÇÃO E APLICAÇÃO ====================
+            _buildTextField(_descricaoController, 'Descrição detalhada', maxLines: 4, enabled: _isEditing),
+            const SizedBox(height: 24),
+            _buildTextField(_aplicacaoController, 'Aplicação ou uso (opcional)', maxLines: 3, enabled: _isEditing),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 50),
 
-              _isEditing
-                  ? DropdownButtonFormField<String>(value: _categoria, decoration: InputDecoration(labelText: 'Categoria', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), items: _categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (v) => v != null ? setState(() => _categoria = v) : null)
-                  : Chip(label: Text(widget.produto['cat']), backgroundColor: const Color(0xFF0055FF).withOpacity(0.1), labelStyle: const TextStyle(fontWeight: FontWeight.w600)),
-
-              const SizedBox(height: 40),
-
-              // ==================== CARD DE DETALHES (super bonito) ====================
-              Card(
-                elevation: 6,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Detalhes do produto', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 20),
-
-                      // Código
-                      _isEditing
-                          ? TextField(controller: _codigoController, decoration: InputDecoration(labelText: 'Código interno', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))))
-                          : _infoRow('Código', widget.produto['codigo'] ?? 'AUTO-${widget.produto['nome'].substring(0, 3).toUpperCase()}'),
-
-                      const SizedBox(height: 20),
-
-                      // Disponível em
-                      const Text('Disponível em', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                      const SizedBox(height: 8),
-                      _isEditing
-                          ? Wrap(
-                              spacing: 10,
-                              children: _disponibilidades.map((opt) {
-                                final selected = _disponivelEm.contains(opt);
-                                return FilterChip(
-                                  label: Text(opt),
-                                  selected: selected,
-                                  onSelected: (s) => setState(() => s ? _disponivelEm.add(opt) : _disponivelEm.remove(opt)),
-                                );
-                              }).toList(),
-                            )
-                          : Wrap(
-                              spacing: 8,
-                              children: _disponivelEm.map((item) => Chip(label: Text(item), backgroundColor: const Color(0xFF0055FF).withOpacity(0.1))).toList(),
-                            ),
-
-                      const SizedBox(height: 24),
-
-                      // Descrição
-                      _isEditing
-                          ? TextField(controller: _descricaoController, maxLines: 5, decoration: InputDecoration(labelText: 'Descrição completa', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), alignLabelWithHint: true))
-                          : _infoRow('Descrição', widget.produto['descricao'] ?? 'Produto de alta qualidade - ideal para o seu cardápio.'),
-                    ],
+            // ==================== BOTÕES ====================
+            if (_isEditing)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[300], foregroundColor: Colors.black87, padding: const EdgeInsets.symmetric(vertical: 18)),
+                      onPressed: _cancelEditing,
+                      child: const Text('Cancelar', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 18)),
+                      onPressed: _saveEditing,
+                      child: const Text('Salvar Alterações', style: TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                ],
+              )
+            else
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Voltar ao Cardápio', style: TextStyle(fontSize: 18)),
                 ),
               ),
-
-              const SizedBox(height: 50),
-
-              // ==================== BOTÕES ====================
-              if (_isEditing)
-                Row(
-                  children: [
-                    Expanded(child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[300], foregroundColor: Colors.black87, padding: const EdgeInsets.symmetric(vertical: 18)), onPressed: _cancelEditing, child: const Text('Cancelar', style: TextStyle(fontSize: 18)))),
-                    const SizedBox(width: 16),
-                    Expanded(child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 18)), onPressed: _saveEditing, child: const Text('Salvar Alterações', style: TextStyle(fontSize: 18)))),
-                  ],
-                )
-              else
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.green), onPressed: () => Navigator.pop(context), child: const Text('Voltar ao Cardápio', style: TextStyle(fontSize: 18))),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _infoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF0055FF))),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 16))),
-        ],
+  // ==================== WIDGET AUXILIAR ====================
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+    bool enabled = true,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      enabled: enabled,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
