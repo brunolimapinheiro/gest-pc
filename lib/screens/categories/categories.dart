@@ -8,183 +8,233 @@ class CategoriesDesktop extends StatefulWidget {
 }
 
 class _CategoriesDesktopState extends State<CategoriesDesktop> {
-  bool _mostrarCategorias = true; // alterna entre Categorias e Complementos
-
-  // Dados de exemplo (depois conecte com banco ou provider)
   final List<Map<String, dynamic>> _categorias = [
     {'nome': 'Lanches', 'qtdProdutos': 18, 'cor': Colors.orange},
     {'nome': 'Bebidas', 'qtdProdutos': 12, 'cor': Colors.blue},
     {'nome': 'Sobremesas', 'qtdProdutos': 8, 'cor': Colors.pink},
     {'nome': 'Pratos Quentes', 'qtdProdutos': 15, 'cor': Colors.red},
     {'nome': 'Promoções', 'qtdProdutos': 5, 'cor': Colors.green},
-  ];
-
-  final List<Map<String, dynamic>> _complementos = [
-    {'nome': 'Queijo Extra', 'preco': 4.90, 'obrigatorio': false},
-    {'nome': 'Bacon Crocante', 'preco': 6.90, 'obrigatorio': false},
-    {'nome': 'Sem Cebola', 'preco': 0.00, 'obrigatorio': false},
-    {'nome': 'Adicional de Molho', 'preco': 3.50, 'obrigatorio': false},
-    {'nome': 'Tamanho Família (obrigatório)', 'preco': 0.00, 'obrigatorio': true},
+    {'nome': 'Acompanhamentos', 'qtdProdutos': 9, 'cor': Colors.teal},
+    {'nome': 'Cafés e Chás', 'qtdProdutos': 7, 'cor': Colors.brown},
   ];
 
   final TextEditingController _searchController = TextEditingController();
 
+  List<Map<String, dynamic>> get _categoriasFiltradas {
+    final query = _searchController.text.toLowerCase().trim();
+    if (query.isEmpty) return _categorias;
+    return _categorias
+        .where((cat) => cat['nome'].toString().toLowerCase().contains(query))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final itens = _mostrarCategorias ? _categorias : _complementos;
+    // === RESPONSIVIDADE ATUALIZADA ===
+    final double width = MediaQuery.of(context).size.width;
+
+    // Quantidade de colunas
+    final int crossAxisCount = width < 700 ? 1 : width < 900 ? 2 : 3;
+
+    // Diminuição começa exatamente em 800px (como você pediu)
+    final bool isSmall = width < 800;
+
+    // Tamanhos dinâmicos
+    final double iconSize = isSmall ? 42 : 56;
+    final double titleFontSize = isSmall ? 18 : 21;
+    final double cardPadding = isSmall ? 18 : 24;
+    final double childAspectRatio = crossAxisCount == 1
+        ? 1.65
+        : crossAxisCount == 2
+            ? 1.48
+            : 1.35;
+
+    final double spacing = isSmall ? 16 : 24;
 
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isSmall ? 20 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho + Botão Novo + Alternar visão
           Row(
             children: [
               Text(
-                _mostrarCategorias ? 'Categorias' : 'Complementos',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                'Categorias',
+                style: TextStyle(
+                  fontSize: isSmall ? 26 : 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const Spacer(),
-              ToggleButtons(
-                isSelected: [!_mostrarCategorias, _mostrarCategorias],
-                onPressed: (index) {
-                  setState(() {
-                    _mostrarCategorias = index == 1;
-                  });
-                },
-                borderRadius: BorderRadius.circular(12),
-                selectedColor: Colors.white,
-                fillColor: const Color(0xFF0055FF),
-                color: const Color(0xFF0055FF),
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                    child: Text('Complementos'),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                    child: Text('Categorias'),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
               ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(_mostrarCategorias ? 'Nova Categoria' : 'Novo Complemento'),
+                icon: const Icon(Icons.add, size: 26),
+                label: Text(
+                  'Nova Categoria',
+                  style: TextStyle(
+                    fontSize: isSmall ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0055FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmall ? 20 : 28,
+                    vertical: isSmall ? 14 : 18,
+                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 3,
                 ),
                 onPressed: () {
-                  // Aqui abre formulário de cadastro
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(_mostrarCategorias
-                          ? 'Abrindo cadastro de categoria...'
-                          : 'Abrindo cadastro de complemento...'),
+                    const SnackBar(
+                      content: Text('✅ Dialog de nova categoria em breve...'),
+                      backgroundColor: Color(0xFF0055FF),
                     ),
                   );
                 },
               ),
             ],
           ),
+
           const SizedBox(height: 24),
 
-          // Busca
           TextField(
             controller: _searchController,
+            onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'Buscar ${_mostrarCategorias ? 'categoria' : 'complemento'}...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              hintText: 'Buscar categoria...',
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
               filled: true,
               fillColor: Colors.grey[100],
+              contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
             ),
-            onChanged: (_) => setState(() {}),
           ),
+
           const SizedBox(height: 32),
 
-          // Grid de itens
           Expanded(
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                childAspectRatio: 1.4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: childAspectRatio,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: spacing,
               ),
-              itemCount: itens.length,
+              itemCount: _categoriasFiltradas.length,
               itemBuilder: (context, index) {
-                final item = itens[index];
-                return Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                final item = _categoriasFiltradas[index];
+                final Color corCategoria = item['cor'] ?? const Color(0xFF0055FF);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // CARD
+                    Expanded(
+                      child: Card(
+                        elevation: 8,
+                        shadowColor: Colors.black.withOpacity(0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        child: Padding(
+                          padding: EdgeInsets.all(cardPadding),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: iconSize + 10,
+                                height: iconSize + 10,
+                                decoration: BoxDecoration(
+                                  color: corCategoria.withOpacity(0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.category_rounded,
+                                  size: iconSize,
+                                  color: corCategoria,
+                                ),
+                              ),
+                              SizedBox(height: isSmall ? 18 : 26),
+                              Text(
+                                item['nome'],
+                                style: TextStyle(
+                                  fontSize: titleFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // RODAPÉ FORA DO CARD
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (_mostrarCategorias) ...[
-                          Icon(Icons.category, size: 60, color: item['cor'] ?? const Color(0xFF0055FF)),
-                          const SizedBox(height: 12),
-                          Text(
-                            item['nome'],
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                        Text(
+                          '${item['qtdProdutos']} produtos',
+                          style: TextStyle(
+                            fontSize: isSmall ? 14 : 15.5,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${item['qtdProdutos']} produtos',
-                            style: const TextStyle(fontSize: 15, color: Colors.grey),
-                          ),
-                        ] else ...[
-                          Icon(Icons.add_circle_outline, size: 60, color: const Color(0xFF0055FF)),
-                          const SizedBox(height: 12),
-                          Text(
-                            item['nome'],
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'R\$ ${item['preco'].toStringAsFixed(2)}',
+                        ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.delete_outline_rounded, size: 22),
+                          label: Text(
+                            'Excluir',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: item['obrigatorio'] ? Colors.red : const Color(0xFF0055FF),
+                              fontSize: isSmall ? 14 : 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          if (item['obrigatorio'])
-                            const Text(
-                              '(Obrigatório)',
-                              style: TextStyle(fontSize: 13, color: Colors.red, fontWeight: FontWeight.w500),
-                            ),
-                        ],
-
-                        const SizedBox(height: 16),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blueGrey),
-                              onPressed: () {
-                                // Editar
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.redAccent),
-                              onPressed: () {
-                                // Confirmar exclusão
-                              },
-                            ),
-                          ],
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.redAccent,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Confirmar exclusão'),
+                                content: Text('Deseja realmente excluir "${item['nome']}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Categoria excluída!'),
+                                          backgroundColor: Colors.redAccent,
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                    child: const Text('Excluir'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 );
               },
             ),

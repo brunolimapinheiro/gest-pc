@@ -11,48 +11,64 @@ class _PdvDesktopState extends State<PdvDesktop> {
   final List<Map<String, dynamic>> _carrinho = [];
   final TextEditingController _buscaController = TextEditingController();
 
-  // ==================== LISTA DE PRODUTOS DEMO (aqui você personaliza tudo!) ====================
-  final List<Map<String, dynamic>> _produtosDemo = [
-  // ROUPAS
-  {'nome': 'Camiseta Básica', 'preco': 39.90, 'icone': Icons.checkroom},
-  {'nome': 'Calça Jeans', 'preco': 89.90, 'icone': Icons.checkroom},
-  {'nome': 'Vestido Floral', 'preco': 69.90, 'icone': Icons.dry_cleaning},
-  {'nome': 'Bolsa de Couro', 'preco': 149.90, 'icone': Icons.shopping_bag},
-  {'nome': 'Tênis Esportivo', 'preco': 119.90, 'icone': Icons.sports_basketball},
+  // ==================== DADOS QUE VÊM DO BACKEND ====================
+  List<Map<String, dynamic>> _produtos = []; // ← será preenchido pelo backend
+  bool _isLoading = true;
+  String? _erro;
 
-  // ELETRÔNICOS / OUTROS
-  {'nome': 'Celular', 'preco': 1299.90, 'icone': Icons.phone_android},
-  {'nome': 'Notebook', 'preco': 3499.90, 'icone': Icons.laptop},
-  {'nome': 'Fone Bluetooth', 'preco': 299.90, 'icone': Icons.headphones},
-  {'nome': 'Smart TV 55"', 'preco': 2199.90, 'icone': Icons.tv},
+  @override
+  void initState() {
+    super.initState();
+    _carregarProdutosDoBackend();
+  }
 
-  // RESTAURANTE / ALIMENTOS
-  {'nome': 'Hambúrguer', 'preco': 29.90, 'icone': Icons.fastfood},
-  {'nome': 'Pizza Margherita', 'preco': 49.90, 'icone': Icons.local_pizza},
-  {'nome': 'Prato Feito', 'preco': 35.90, 'icone': Icons.restaurant},
-  {'nome': 'Refrigerante 2L', 'preco': 12.90, 'icone': Icons.local_drink},
-  {'nome': 'Suco Natural', 'preco': 15.90, 'icone': Icons.emoji_food_beverage},
-  {'nome': 'Café Expresso', 'preco': 9.90, 'icone': Icons.coffee},
-  {'nome': 'Sorvete', 'preco': 18.90, 'icone': Icons.icecream},
-  {'nome': 'Bolo de Chocolate', 'preco': 25.90, 'icone': Icons.cake},
-  {'nome': 'Salada', 'preco': 22.90, 'icone': Icons.local_dining},
-  {'nome': 'Almoço Executivo', 'preco': 39.90, 'icone': Icons.lunch_dining},
-  {'nome': 'Janta Completa', 'preco': 45.90, 'icone': Icons.dinner_dining},
-  {'nome': 'Pão na Chapa', 'preco': 14.90, 'icone': Icons.breakfast_dining},
-  {'nome': 'Sopa do Dia', 'preco': 19.90, 'icone': Icons.soup_kitchen},
-  {'nome': 'Coxinha', 'preco': 8.90, 'icone': Icons.bakery_dining},
-  {'nome': 'Açaí', 'preco': 22.90, 'icone': Icons.emoji_food_beverage},
-  {'nome': 'Combo Fast Food', 'preco': 55.90, 'icone': Icons.fastfood},
-];
+  // ====================== MÉTODO QUE VOCÊ VAI CONECTAR COM O BACKEND ======================
+  Future<void> _carregarProdutosDoBackend() async {
+    setState(() {
+      _isLoading = true;
+      _erro = null;
+    });
+
+    try {
+      // TODO: SUBSTITUA ESTE MOCK PELA CHAMADA REAL DO BACKEND
+      // Exemplo com http ou Dio:
+      // final response = await http.get(Uri.parse('https://seusite.com/api/produtos'));
+      // final data = json.decode(response.body);
+
+      // Simulação de delay (remova quando tiver API real)
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // Dados de exemplo (substitua pelo que vier do backend)
+      setState(() {
+        _produtos = [
+          {'id': 1, 'nome': 'Hambúrguer', 'preco': 29.90, 'icone': Icons.fastfood},
+          {'id': 2, 'nome': 'Pizza Margherita', 'preco': 49.90, 'icone': Icons.local_pizza},
+          {'id': 3, 'nome': 'Prato Feito', 'preco': 35.90, 'icone': Icons.restaurant},
+          {'id': 4, 'nome': 'Refrigerante 2L', 'preco': 12.90, 'icone': Icons.local_drink},
+          {'id': 5, 'nome': 'Suco Natural', 'preco': 15.90, 'icone': Icons.emoji_food_beverage},
+          {'id': 6, 'nome': 'Café Expresso', 'preco': 9.90, 'icone': Icons.coffee},
+          {'id': 7, 'nome': 'Sorvete', 'preco': 18.90, 'icone': Icons.icecream},
+          {'id': 8, 'nome': 'Bolo de Chocolate', 'preco': 25.90, 'icone': Icons.cake},
+          // ... adicione quantos quiser
+        ];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro ao carregar produtos. Verifique sua conexão.';
+        _isLoading = false;
+      });
+    }
+  }
 
   // ==================== ADICIONAR PRODUTO ====================
-  void adicionarProduto(String nome, double preco) {
+  void adicionarProduto(String nome, double preco, int id) {
     setState(() {
-      final index = _carrinho.indexWhere((item) => item['nome'] == nome);
+      final index = _carrinho.indexWhere((item) => item['id'] == id);
       if (index != -1) {
         _carrinho[index]['qtd']++;
       } else {
-        _carrinho.add({'nome': nome, 'preco': preco, 'qtd': 1});
+        _carrinho.add({'id': id, 'nome': nome, 'preco': preco, 'qtd': 1});
       }
     });
   }
@@ -72,7 +88,7 @@ class _PdvDesktopState extends State<PdvDesktop> {
 
   double get total => _carrinho.fold(0, (sum, item) => sum + (item['preco'] * item['qtd']));
 
-  // ==================== FINALIZAR COMPRA (mantido igual) ====================
+  // ==================== FINALIZAR COMPRA (aqui vai o backend) ====================
   void finalizarCompra() {
     if (_carrinho.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,6 +96,16 @@ class _PdvDesktopState extends State<PdvDesktop> {
       );
       return;
     }
+
+    // TODO: ENVIAR PARA O BACKEND AQUI
+    // Exemplo:
+    // final pedido = {
+    //   "itens": _carrinho,
+    //   "total": total,
+    //   "data": DateTime.now().toIso8601String(),
+    // };
+    // await api.post('/pedidos', pedido);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -104,15 +130,9 @@ class _PdvDesktopState extends State<PdvDesktop> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
             onPressed: () {
               Navigator.pop(context);
               _finalizarComSucesso();
@@ -175,51 +195,72 @@ class _PdvDesktopState extends State<PdvDesktop> {
                     fillColor: Colors.grey[100],
                   ),
                   onSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      adicionarProduto('Produto: $value', 19.90);
-                      _buscaController.clear();
-                    }
+                    // Busca real (filtra os produtos já carregados)
+                    setState(() {}); // o GridView já filtra automaticamente
                   },
                 ),
                 const SizedBox(height: 20),
+
                 Expanded(
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 1.05,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemCount: _produtosDemo.length,
-                    itemBuilder: (context, i) {
-                      final produto = _produtosDemo[i];
-                      return Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => adicionarProduto(produto['nome'], produto['preco']),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(produto['icone'] as IconData, size: 52, color: const Color(0xFF0055FF)),
-                              const SizedBox(height: 8),
-                              Text(produto['nome'],
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                              Text('R\$ ${produto['preco'].toStringAsFixed(2)}',
-                                  style: const TextStyle(fontSize: 15, color: Colors.grey)),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF0055FF)))
+                      : _erro != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                                  const SizedBox(height: 16),
+                                  Text(_erro!, textAlign: TextAlign.center),
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('Tentar novamente'),
+                                    onPressed: _carregarProdutosDoBackend,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : GridView.builder(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                childAspectRatio: 1.05,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              itemCount: _produtosFiltrados.length,
+                              itemBuilder: (context, i) {
+                                final produto = _produtosFiltrados[i];
+                                return Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () => adicionarProduto(
+                                      produto['nome'],
+                                      produto['preco'],
+                                      produto['id'],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(produto['icone'] as IconData, size: 52, color: const Color(0xFF0055FF)),
+                                        const SizedBox(height: 8),
+                                        Text(produto['nome'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                        Text('R\$ ${produto['preco'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
           ),
+
           const SizedBox(width: 24),
-          // ==================== DIREITA: CARRINHO ====================
+
+          // ==================== DIREITA: CARRINHO (permanece igual) ====================
           Expanded(
             child: Card(
               elevation: 6,
@@ -253,19 +294,10 @@ class _PdvDesktopState extends State<PdvDesktop> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.remove, color: Colors.red),
-                                        onPressed: () => alterarQuantidade(i, -1),
-                                      ),
+                                      IconButton(icon: const Icon(Icons.remove, color: Colors.red), onPressed: () => alterarQuantidade(i, -1)),
                                       Text('${item['qtd']}', style: const TextStyle(fontSize: 18)),
-                                      IconButton(
-                                        icon: const Icon(Icons.add, color: Colors.green),
-                                        onPressed: () => alterarQuantidade(i, 1),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.grey),
-                                        onPressed: () => removerItem(i),
-                                      ),
+                                      IconButton(icon: const Icon(Icons.add, color: Colors.green), onPressed: () => alterarQuantidade(i, 1)),
+                                      IconButton(icon: const Icon(Icons.delete, color: Colors.grey), onPressed: () => removerItem(i)),
                                     ],
                                   ),
                                 );
@@ -273,10 +305,7 @@ class _PdvDesktopState extends State<PdvDesktop> {
                             ),
                     ),
                     const Divider(thickness: 1.5),
-                    Text(
-                      'Total: R\$ ${total.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF0055FF)),
-                    ),
+                    Text('Total: R\$ ${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF0055FF))),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
@@ -284,11 +313,7 @@ class _PdvDesktopState extends State<PdvDesktop> {
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.payment, size: 28),
                         label: const Text('FINALIZAR COMPRA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         onPressed: finalizarCompra,
                       ),
                     ),
@@ -300,5 +325,12 @@ class _PdvDesktopState extends State<PdvDesktop> {
         ],
       ),
     );
+  }
+
+  // Filtro de busca em tempo real
+  List<Map<String, dynamic>> get _produtosFiltrados {
+    final termo = _buscaController.text.toLowerCase().trim();
+    if (termo.isEmpty) return _produtos;
+    return _produtos.where((p) => p['nome'].toString().toLowerCase().contains(termo)).toList();
   }
 }
