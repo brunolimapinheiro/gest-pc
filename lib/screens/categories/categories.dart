@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+ import 'new_category_dialog.dart'; 
 
 class CategoriesDesktop extends StatefulWidget {
   const CategoriesDesktop({super.key});
@@ -86,13 +87,27 @@ class _CategoriesDesktopState extends State<CategoriesDesktop> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 3,
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('✅ Dialog de nova categoria em breve...'),
-                      backgroundColor: Color(0xFF0055FF),
-                    ),
-                  );
+                // =======================================================
+                // AQUI CHAMAMOS O POP-UP SEPARADO!
+                // =======================================================
+                onPressed: () async {
+                  final novaCat = await showNewCategoryDialog(context);
+                  
+                  // Se o usuário salvar e retornar os dados
+                  if (novaCat != null) {
+                    setState(() {
+                      _categorias.add(novaCat);
+                    });
+                    
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('✅ Categoria adicionada com sucesso!'), 
+                          backgroundColor: Colors.green
+                        )
+                      );
+                    }
+                  }
                 },
               ),
             ],

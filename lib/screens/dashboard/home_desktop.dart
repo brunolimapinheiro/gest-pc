@@ -4,6 +4,7 @@ import '../pdv/pdv_desktop.dart';
 import '../card_menu/card_menu.dart';
 import '../categories/categories.dart';
 import '../promotions/promotions.dart';
+import '../financial/financial.dart';
 import '../command/command.dart';
 import '../table/table.dart';
 import '../kitchen/kitchen.dart';
@@ -12,6 +13,7 @@ import '../validity/validity.dart';
 import '../stock/stock.dart';
 import '../shopping list/shopping list.dart';
 import '../collaborators/collaborators.dart';
+import '../settings/settings.dart';
 
 // ← NOVO IMPORT (o sidebar que criamos separado)
 import '../../widgets/sidebar.dart';          // ← mude o caminho se estiver em outra pasta
@@ -91,19 +93,20 @@ class _HomeDesktopState extends State<HomeDesktop> {
     const ProductsDesktop(),
     const CategoriesDesktop(),
     const PromotionsAndCombosDesktop(),
-    const OpenOrdersDesktop(),
+    const FinanceDesktop(),
+   // const OpenOrdersDesktop(),
     // const TableManagementDesktop(),
     // const KdsKitchenDesktop(),
     // const DeliveryManagementDesktop(),
     // const ExpirationsDesktop(),
     // const StockControlDesktop(),
     // const ShoppingListDesktop(),
-    // const SimpleScreen(title: 'Financeiro / Caixa'),
+        const EmployeesDesktop(),
     // const SimpleScreen(title: 'Relatórios e Indicadores'),
     // const SimpleScreen(title: 'Análises e DRE'),
     // const EmployeesDesktop(),
     // const SimpleScreen(title: 'Painel do Usuário'),
-    // const SimpleScreen(title: 'Configurações'),
+    const SettingsDesktop(),
   ];
 
   @override

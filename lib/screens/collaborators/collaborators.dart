@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+ import 'new_employee_dialog.dart';
 
 class EmployeesDesktop extends StatefulWidget {
   const EmployeesDesktop({super.key});
@@ -9,272 +10,227 @@ class EmployeesDesktop extends StatefulWidget {
 
 class _EmployeesDesktopState extends State<EmployeesDesktop> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedRole = 'Todos';
-  String _selectedStatus = 'Todos';
+  String _selectedFilter = 'Todos';
 
-  final List<String> _roles = [
-    'Todos',
-    'Garçom',
-    'Motoboy',
-    'Cozinheiro',
-    'Caixa',
-    'Gerente',
-    'Auxiliar',
+  final List<String> _filters = [
+    'Todos', 'Gerente', 'Caixa', 'Atendente / Garçom', 'Cozinha', 'Inativos'
   ];
 
-  final List<String> _statuses = [
-    'Todos',
-    'Ativo',
-    'Inativo',
-    'Férias',
-    'Afastado',
-  ];
-
-  // Dados de exemplo (em produção: banco de dados com foto, comissão, etc.)
-  final List<Map<String, dynamic>> _employees = [
-    {
-      'name': 'Carlos Almeida',
-      'role': 'Garçom',
-      'status': 'Ativo',
-      'commissionPending': 320.50,
-      'phone': '(86) 99912-3456',
-      'avatarColor': Colors.blue,
-      'color': Colors.green,
-    },
-    {
-      'name': 'João Santos',
-      'role': 'Motoboy',
-      'status': 'Ativo',
-      'commissionPending': 180.00,
-      'phone': '(86) 98876-5432',
-      'avatarColor': Colors.orange,
-      'color': Colors.green,
-    },
-    {
-      'name': 'Maria Oliveira',
-      'role': 'Cozinheira',
-      'status': 'Férias',
-      'commissionPending': 0.00,
-      'phone': '(86) 98765-4321',
-      'avatarColor': Colors.pink,
-      'color': Colors.orange,
-    },
-    {
-      'name': 'Pedro Lima',
-      'role': 'Caixa',
-      'status': 'Ativo',
-      'commissionPending': 450.75,
-      'phone': '(86) 99123-4567',
-      'avatarColor': Colors.purple,
-      'color': Colors.green,
-    },
-    {
-      'name': 'Ana Costa',
-      'role': 'Gerente',
-      'status': 'Ativo',
-      'commissionPending': 0.00,
-      'phone': '(86) 99234-5678',
-      'avatarColor': Colors.teal,
-      'color': Colors.green,
-    },
-    {
-      'name': 'Lucas Ferreira',
-      'role': 'Motoboy',
-      'status': 'Inativo',
-      'commissionPending': 95.20,
-      'phone': '(86) 99345-6789',
-      'avatarColor': Colors.grey,
-      'color': Colors.red,
-    },
+  // Mock de Dados
+  final List<Map<String, dynamic>> _colaboradores = [
+    {'nome': 'Carlos Silva', 'cargo': 'Gerente', 'telefone': '(11) 98888-7777', 'acesso': 'Administrador', 'status': 'Ativo'},
+    {'nome': 'Mariana Souza', 'cargo': 'Caixa', 'telefone': '(11) 97777-6666', 'acesso': 'Operador', 'status': 'Ativo'},
+    {'nome': 'João Pedro', 'cargo': 'Atendente / Garçom', 'telefone': '(11) 96666-5555', 'acesso': 'Operador', 'status': 'Ativo'},
+    {'nome': 'Ana Clara', 'cargo': 'Cozinha', 'telefone': '(11) 95555-4444', 'acesso': 'Sem Acesso', 'status': 'Ativo'},
+    {'nome': 'Roberto Alves', 'cargo': 'Entregador', 'telefone': '(11) 94444-3333', 'acesso': 'Sem Acesso', 'status': 'Inativo'},
   ];
 
   @override
   Widget build(BuildContext context) {
-    final filteredEmployees = _employees.where((emp) {
-      final bool roleMatch = _selectedRole == 'Todos' || emp['role'] == _selectedRole;
-      final bool statusMatch = _selectedStatus == 'Todos' || emp['status'] == _selectedStatus;
-      final bool searchMatch = _searchController.text.isEmpty ||
-          emp['name'].toLowerCase().contains(_searchController.text.toLowerCase());
-      return roleMatch && statusMatch && searchMatch;
-    }).toList();
+    // === LÓGICA DE RESPONSIVIDADE ===
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    int crossAxisCount;
+    double aspectRatio;
+    double paddingGeral;
+    double titleSize;
+    double headerTextSize;
+
+    if (screenWidth >= 1000) {
+      crossAxisCount = 4;
+      aspectRatio = 1.0; 
+      paddingGeral = 32;
+      titleSize = 18;
+      headerTextSize = 32;
+    } else if (screenWidth >= 800) {
+      crossAxisCount = 3;
+      aspectRatio = 0.95;
+      paddingGeral = 24;
+      titleSize = 16;
+      headerTextSize = 28;
+    } else if (screenWidth >= 550) {
+      crossAxisCount = 2;
+      aspectRatio = 1.1;
+      paddingGeral = 16;
+      titleSize = 16;
+      headerTextSize = 24;
+    } else {
+      crossAxisCount = 1;
+      aspectRatio = 2.2;
+      paddingGeral = 16;
+      titleSize = 18;
+      headerTextSize = 22;
+    }
+
+    final filteredList = _selectedFilter == 'Todos'
+        ? _colaboradores
+        : _colaboradores.where((c) {
+            if (_selectedFilter == 'Inativos') return c['status'] == 'Inativo';
+            // Ignora os inativos nas outras abas
+            if (c['status'] == 'Inativo') return false; 
+            return c['cargo'] == _selectedFilter;
+          }).toList();
 
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(paddingGeral),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              const Text(
-                'Colaboradores / Garçons / Motoboys',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              Text(
+                'Equipe e Colaboradores',
+                style: TextStyle(fontSize: headerTextSize, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
               ElevatedButton.icon(
-                icon: const Icon(Icons.person_add),
-                label: const Text('Novo Colaborador'),
+                icon: const Icon(Icons.person_add, color: Colors.white),
+                label: Text(screenWidth < 600 ? 'Novo' : 'Novo Colaborador', style: const TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0055FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: screenWidth < 700 ? 12 : 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Abrindo cadastro de novo colaborador...')),
-                  );
+                onPressed: () async {
+                  final novoColab = await showNewEmployeeDialog(context);
+                  if (novoColab != null) {
+                    setState(() => _colaboradores.add(novoColab));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✅ Colaborador cadastrado!'), backgroundColor: Colors.green)
+                      );
+                    }
+                  }
                 },
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: screenWidth < 700 ? 16 : 24),
 
           // Filtros + Busca
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar por nome...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  onChanged: (_) => setState(() {}),
+          screenWidth < 700
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildSearchBar(),
+                    const SizedBox(height: 16),
+                    _buildFiltersRow(),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: _buildSearchBar()),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 3, child: _buildFiltersRow()),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedRole,
-                  decoration: InputDecoration(
-                    labelText: 'Cargo',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  items: _roles.map((role) {
-                    return DropdownMenuItem(value: role, child: Text(role));
-                  }).toList(),
-                  onChanged: (value) => setState(() => _selectedRole = value!),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedStatus,
-                  decoration: InputDecoration(
-                    labelText: 'Status',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  items: _statuses.map((status) {
-                    return DropdownMenuItem(value: status, child: Text(status));
-                  }).toList(),
-                  onChanged: (value) => setState(() => _selectedStatus = value!),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
+          
+          SizedBox(height: screenWidth < 700 ? 16 : 32),
 
-          // Lista de colaboradores
+          // Lista em Grid
           Expanded(
-            child: filteredEmployees.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.people_alt_outlined, size: 90, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text('Nenhum colaborador encontrado', style: TextStyle(fontSize: 22, color: Colors.grey)),
-                      ],
-                    ),
-                  )
+            child: filteredList.isEmpty
+                ? const Center(child: Text('Nenhum colaborador encontrado.', style: TextStyle(fontSize: 16, color: Colors.grey)))
                 : GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 1.65,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: aspectRatio,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
-                    itemCount: filteredEmployees.length,
+                    itemCount: filteredList.length,
                     itemBuilder: (context, index) {
-                      final emp = filteredEmployees[index];
-                      final Color statusColor = emp['color'];
-                      final bool hasPending = emp['commissionPending'] > 0;
+                      final item = filteredList[index];
+                      final isAtivo = item['status'] == 'Ativo';
+                      
+                      // Pega a primeira letra do nome para o Avatar
+                      final initial = item['nome'].toString().isNotEmpty ? item['nome'].toString()[0].toUpperCase() : '?';
 
                       return Card(
-                        elevation: 5,
+                        elevation: 4,
+                        shadowColor: Colors.black.withOpacity(0.05),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         child: Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              CircleAvatar(
-                                radius: 40,
-                                backgroundColor: emp['avatarColor'],
-                                child: Text(
-                                  emp['name'].substring(0, 1).toUpperCase(),
-                                  style: const TextStyle(fontSize: 36, color: Colors.white),
-                                ),
+                              // Avatar e Status
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: const Color(0xFF0055FF).withOpacity(0.15),
+                                    child: Text(initial, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0055FF))),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: isAtivo ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      item['status'],
+                                      style: TextStyle(color: isAtivo ? Colors.green : Colors.red, fontWeight: FontWeight.bold, fontSize: 11),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 12),
+                              const Spacer(),
+                              
+                              // Textos Principais
                               Text(
-                                emp['name'],
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
+                                item['nome'],
+                                style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 4),
                               Text(
-                                emp['role'],
-                                style: const TextStyle(fontSize: 16, color: Color(0xFF0055FF)),
+                                item['cargo'],
+                                style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
                               ),
                               const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  emp['status'],
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
+                              
+                              // Telefone
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.phone, size: 14, color: Colors.grey[500]),
+                                  const SizedBox(width: 4),
+                                  Text(item['telefone'].toString().isEmpty ? 'Sem telefone' : item['telefone'], style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                                ],
                               ),
-                              const SizedBox(height: 12),
-                              if (hasPending)
-                                Text(
-                                  'Comissão pendente: R\$ ${emp['commissionPending'].toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
-                                  ),
-                                ),
+                              
                               const Spacer(),
+                              const Divider(height: 1, thickness: 0.5),
+                              const Spacer(),
+                              
+                              // Botões de Ação
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.phone, color: Colors.green),
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.edit, size: 18),
+                                    label: const Text('Editar'),
+                                    style: TextButton.styleFrom(foregroundColor: Colors.blueGrey),
+                                    onPressed: () {},
+                                  ),
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.block, size: 18), // Usando "block" em vez de apagar para RH
+                                    label: Text(isAtivo ? 'Desativar' : 'Ativar'),
+                                    style: TextButton.styleFrom(foregroundColor: isAtivo ? Colors.orange : Colors.green),
                                     onPressed: () {
-                                      // Ligar ou WhatsApp
+                                      setState(() {
+                                        item['status'] = isAtivo ? 'Inativo' : 'Ativo';
+                                      });
                                     },
-                                    tooltip: 'Contato: ${emp['phone']}',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blueGrey),
-                                    onPressed: () {},
-                                    tooltip: 'Editar Colaborador',
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      emp['status'] == 'Ativo' ? Icons.block : Icons.check_circle,
-                                      color: emp['status'] == 'Ativo' ? Colors.red : Colors.green,
-                                    ),
-                                    onPressed: () {},
-                                    tooltip: emp['status'] == 'Ativo' ? 'Desativar' : 'Ativar',
                                   ),
                                 ],
                               ),
@@ -286,6 +242,45 @@ class _EmployeesDesktopState extends State<EmployeesDesktop> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Buscar colaborador...',
+        prefixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        filled: true,
+        fillColor: Colors.grey[100],
+      ),
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
+  Widget _buildFiltersRow() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _filters.map((filter) {
+          final isSelected = filter == _selectedFilter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              selected: isSelected,
+              label: Text(filter),
+              onSelected: (_) => setState(() => _selectedFilter = filter),
+              selectedColor: const Color(0xFF0055FF),
+              backgroundColor: Colors.grey[200],
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

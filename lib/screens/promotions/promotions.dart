@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// IMPORTANTE: Importe o arquivo que você criou acima! Exemplo:
+ import 'new_promo_dialog.dart'; 
 
 class PromotionsAndCombosDesktop extends StatefulWidget {
   const PromotionsAndCombosDesktop({super.key});
@@ -20,7 +22,6 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
     'Compre X Leve Y',
   ];
 
-  // Dados de exemplo (em produção viria de banco ou API)
   final List<Map<String, dynamic>> _promotions = [
     {
       'name': 'Combo Família',
@@ -41,27 +42,75 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
       'status': 'Ativa',
       'validUntil': '15/04/2026',
     },
-    {
-      'name': 'Compre 2 Pague 1 Refrigerante',
-      'type': 'Compre X Leve Y',
-      'description': 'Leve 2 e pague apenas 1',
-      'originalPrice': 13.00,
-      'promoPrice': 6.50,
-      'status': 'Inativa',
-      'validUntil': '10/03/2026',
-    },
-    {
-      'name': 'Happy Hour 18h-21h',
-      'type': 'Desconto %',
-      'description': '15% OFF em todas as bebidas',
-      'discount': 15,
-      'status': 'Ativa',
-      'validUntil': '31/12/2026',
-    },
   ];
 
   @override
   Widget build(BuildContext context) {
+    // === LÓGICA DE RESPONSIVIDADE ===
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    int crossAxisCount;
+    double aspectRatio;
+    double paddingGeral;
+    double titleSize;
+    double descSize;
+    double priceSize;
+    double oldPriceSize; 
+    double tagSize;
+    double cardPadding;
+    double spacing;
+    double headerTextSize;
+
+    if (screenWidth >= 900) {
+      crossAxisCount = 3;
+      aspectRatio = 1.6;
+      paddingGeral = 32;
+      titleSize = 20;
+      descSize = 14;
+      priceSize = 16; 
+      oldPriceSize = 13;
+      tagSize = 13;
+      cardPadding = 16;
+      spacing = 12;
+      headerTextSize = 32;
+    } else if (screenWidth >= 700) {
+      crossAxisCount = 3;
+      aspectRatio = 1.15; 
+      paddingGeral = 24;
+      titleSize = 16;
+      descSize = 12;
+      priceSize = 14; 
+      oldPriceSize = 11;
+      tagSize = 11;
+      cardPadding = 12;
+      spacing = 8;
+      headerTextSize = 26;
+    } else if (screenWidth >= 500) {
+      crossAxisCount = 2;
+      aspectRatio = 1.25; 
+      paddingGeral = 16;
+      titleSize = 15;
+      descSize = 12;
+      priceSize = 13; 
+      oldPriceSize = 11;
+      tagSize = 11;
+      cardPadding = 12;
+      spacing = 8;
+      headerTextSize = 22;
+    } else {
+      crossAxisCount = 1;
+      aspectRatio = 2.2; 
+      paddingGeral = 16;
+      titleSize = 18;
+      descSize = 13;
+      priceSize = 16; 
+      oldPriceSize = 12;
+      tagSize = 12;
+      cardPadding = 16;
+      spacing = 12;
+      headerTextSize = 20;
+    }
+
     final filteredPromotions = _selectedFilter == 'Todas'
         ? _promotions
         : _promotions.where((p) {
@@ -73,79 +122,73 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
           }).toList();
 
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(paddingGeral),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              const Text(
+              Text(
                 'Promoções e Combos',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: headerTextSize, fontWeight: FontWeight.bold),
               ),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add),
-                label: const Text('Nova Promoção / Combo'),
+                label: Text(screenWidth < 600 ? 'Nova' : 'Nova Promoção / Combo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0055FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: screenWidth < 700 ? 12 : 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {
-                  // Abrir formulário de criação
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Abrindo formulário de nova promoção...')),
-                  );
+                // ==============================================================
+                // CHAMANDO O ARQUIVO EXTERNO E ATUALIZANDO A LISTA
+                // ==============================================================
+                onPressed: () async {
+                  // Abre o dialog do outro arquivo e espera o resultado
+                  final novaPromoData = await showNewPromoDialog(context);
+                  
+                  // Se o usuário clicou em 'Cadastrar' e retornou os dados (não foi null)
+                  if (novaPromoData != null) {
+                    setState(() {
+                      _promotions.add(novaPromoData);
+                    });
+                    
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✅ Promoção cadastrada com sucesso!'), backgroundColor: Colors.green)
+                      );
+                    }
+                  }
                 },
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: screenWidth < 700 ? 16 : 24),
 
           // Filtros + Busca
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar promoção ou combo...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  onChanged: (_) => setState(() {}),
+          screenWidth < 700
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildSearchBar(),
+                    const SizedBox(height: 16),
+                    _buildFiltersRow(tagSize),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: _buildSearchBar()),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 3, child: _buildFiltersRow(tagSize)),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 24),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _filters.map((filter) {
-                    final isSelected = filter == _selectedFilter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: isSelected,
-                        label: Text(filter),
-                        onSelected: (_) => setState(() => _selectedFilter = filter),
-                        selectedColor: const Color(0xFF0055FF),
-                        backgroundColor: Colors.grey[200],
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
+          
+          SizedBox(height: screenWidth < 700 ? 16 : 32),
 
           // Lista de promoções
           Expanded(
@@ -161,11 +204,11 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
                     ),
                   )
                 : GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 1.6,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: aspectRatio,
+                      crossAxisSpacing: screenWidth < 700 ? 12 : 16,
+                      mainAxisSpacing: screenWidth < 700 ? 12 : 16,
                     ),
                     itemCount: filteredPromotions.length,
                     itemBuilder: (context, index) {
@@ -176,7 +219,7 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
                         elevation: 4,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(cardPadding),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -184,71 +227,95 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: isActive ? Colors.green : Colors.red,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
                                       promo['status'],
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        color: Colors.white, 
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: tagSize
+                                      ),
                                     ),
                                   ),
                                   if (promo['validUntil'] != null)
                                     Text(
                                       'Até ${promo['validUntil']}',
-                                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                                      style: TextStyle(fontSize: tagSize, color: Colors.grey),
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: spacing),
+                              
                               Text(
                                 promo['name'],
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 4),
                               Text(
                                 promo['description'],
-                                style: const TextStyle(fontSize: 15, color: Colors.grey),
+                                style: TextStyle(fontSize: descSize, color: Colors.grey),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const Spacer(),
+                              
+                              const Spacer(), 
+                              
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   if (promo['type'] == 'Combo' || promo['type'] == 'Compre X Leve Y')
-                                    Text(
-                                      'De R\$ ${promo['originalPrice']?.toStringAsFixed(2) ?? '-'}',
-                                      style: const TextStyle(
-                                        decoration: TextDecoration.lineThrough,
-                                        color: Colors.grey,
+                                    Flexible(
+                                      child: Text(
+                                        'De R\$ ${promo['originalPrice']?.toStringAsFixed(2) ?? '-'}',
+                                        style: TextStyle(
+                                          decoration: TextDecoration.lineThrough,
+                                          color: Colors.grey,
+                                          fontSize: oldPriceSize,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                  Text(
-                                    promo['promoPrice'] != null
-                                        ? 'Por R\$ ${promo['promoPrice'].toStringAsFixed(2)}'
-                                        : '${promo['discount']}% OFF',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0055FF),
+                                  Flexible(
+                                    child: Text(
+                                      promo['promoPrice'] != null
+                                          ? 'Por R\$ ${promo['promoPrice'].toStringAsFixed(2)}'
+                                          : '${promo['discount']}% OFF',
+                                      style: TextStyle(
+                                        fontSize: priceSize,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF0055FF),
+                                      ),
+                                      textAlign: TextAlign.right,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              
+                              SizedBox(height: spacing / 2),
+                              const Divider(height: 1, thickness: 0.5, color: Colors.black12),
+                              SizedBox(height: spacing / 2),
+                              
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: Icon(Icons.edit, color: Colors.blueGrey, size: titleSize),
                                     onPressed: () {},
                                   ),
+                                  const SizedBox(width: 16),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: Icon(Icons.delete, color: Colors.redAccent, size: titleSize),
                                     onPressed: () {},
                                   ),
                                 ],
@@ -261,6 +328,46 @@ class _PromotionsAndCombosDesktopState extends State<PromotionsAndCombosDesktop>
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Buscar promoção ou combo...',
+        prefixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey[100],
+      ),
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
+  Widget _buildFiltersRow(double tagSize) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _filters.map((filter) {
+          final isSelected = filter == _selectedFilter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              selected: isSelected,
+              label: Text(filter),
+              onSelected: (_) => setState(() => _selectedFilter = filter),
+              selectedColor: const Color(0xFF0055FF),
+              backgroundColor: Colors.grey[200],
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: tagSize + 1, 
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
